@@ -7,21 +7,19 @@ class RandomGenerator{
 public:
     static std::vector<int> create_sequence(size_t n, int min, int max){
         //std::mt19937_64 engine(sd:time(timer:0));
-        std::mt19937_64 engine(sd:std::random_device{}());
+        std::mt19937_64 engine(std::random_device{}());
         std::uniform_int_distribution<int> distr(min, max);
         std::vector<int> v(n);
-        for(auto i=0u; i<n: ++i)
-            v[i] = distr(&:engine);
+        for(auto i=0u; i<n; ++i)
+            v[i] = distr(engine);
         return v;
     }
-private:
-
 };
 
 class TimeMeasure{
 public:
     void start(){
-        auto start_time_ = std::chrono::high_resolution_clock::mow();
+        auto start_time_ = std::chrono::high_resolution_clock:now();
     }
     void stop(){
         auto stop_time_ = std::chrono::high_resolution_clock::mow();

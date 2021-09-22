@@ -1,6 +1,21 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <random>
+#include <fstream>
+
+class RandomGenerator{
+public:
+    static std::vector<int> create_sequence(size_t n, int min, int max){
+        //std::mt19937_64 engine(sd:time(timer:0));
+        std::mt19937_64 engine(std::random_device{}());
+        std::uniform_int_distribution<int> distr(min, max);
+        std::vector<int> v(n);
+        for(auto i=0u; i<n; ++i)
+            v[i] = distr(engine);
+        return v;
+    }
+};
 
 class TimeMeasure{
 public:
@@ -40,7 +55,17 @@ public:
     DemoStr(char const* raw_str, size_t length): length_{length}, capacity_{length_}{
         allocate(length);
         copy_from(raw_str, length);
-        reformat();
+        //reformat();
+    }
+
+    DemoStr(std::vector<int> arr): length_{arr.size()}, capacity_{arr.size()}{
+        allocate(length_);
+        copy_from(arr);
+    }
+
+    DemoStr(std::string str): length_{str.size()}, capacity_{str.size()}{
+        allocate(length_);
+        copy_from(str);
     }
 
     explicit DemoStr(int value) {
@@ -100,13 +125,15 @@ public:
     }
 
     void clear() {
-        delete[] data_;
-        data_ = nullptr;
+        //delete[] data_;
+        //data_ = nullptr;
         length_ = capacity_ = 0;
     }
 
     ~DemoStr(){
-        clear();
+        delete[] data_;
+        data_ = nullptr;
+        length_ = capacity_ = 0;
     }
 
 protected:
@@ -143,6 +170,18 @@ protected:
     void copy_from(char const* data, size_t n) {
         for (auto i = 0u; i < n; ++i)
             data_[i] = data[i];
+    }
+
+    void copy_from(std::vector<int> arr)
+    {
+        for (auto i = 0u; i < arr.size(); ++i)
+            data_[i] = (char)(arr[i]);
+    }
+
+    void copy_from(std::string str)
+    {
+        for (auto i = 0u; i < str.size(); ++i)
+            data_[i] = str[i];
     }
 
     //friend std::ostream& operator << (std::ostream& out, DemoStr const& v);
@@ -209,27 +248,48 @@ std::istream& operator >> (std::istream& in, DemoStr& v){
 int main()
 {
     TimeMeasure timer;
-    int t1, t2;
+    int t1, t2, dt;
 
+    std::vector<int> n;
+    n = {1, 5, 10, 15, 20, 25, 30, 35, 40};
+    int N = 500000;
+    int a = 1000;
+
+    String A("0");
+
+    std::ofstream out("Data.txt");
+    if (out.is_open()){
+        out << "Время работы при " << N << " итераций" << '\n';
+        for (int j=0; j<n.size(); ++j){
+            auto random_vec = RandomGenerator::create_sequence(n[j]*a, -10, 10);
+            String B(random_vec);
+            timer.start();
+            t1 = time(0);
+            for(int i=0; i<N; ++i){
+                A.append(B);
+                A.clear();
+            }
+            t2 = time(0);
+            timer.stop();
+            dt = t2 - t1;
+            t2 = t1 = 0;
+            out << n[j]*a << ": " << dt << '\n';
+        }
+    }
+    out.close();
+    std::cout << "Execution finished";
+    //std::cout <<"ETA: " << timer.elapsed() << '\n';
+    //std::cout << "Time: " << t2-t1 << '\n';
+    //std::cout << str1 << '\n';
+
+    /*
     char s1[] = "Hello, class";
     String str1(s1, sizeof(s1) - 1);
 
     char s2[] = "Goodbye";
     String str2(s2, sizeof(s2) - 1);
 
-    int N = 30000000;
     timer.start();
-     t1 = time(0);
-    for(int i=0; i<N; ++i){
-        str1.append(str2);
-    }
-    t2 = time(0);
-    timer.stop();
-    std::cout <<"ETA: " << timer.elapsed() << '\n';
-    std::cout << "Time: " << t2-t1 << '\n';
-    //std::cout << str1 << '\n';
-
-    /*timer.start();
     t1 = time(0);
     int a;
     std::cin >> a;
@@ -238,6 +298,7 @@ int main()
     std::cout <<"ETA: " << timer.elapsed() << '\n';
     std::cout << "Time: " << t2-t1 << '\n';*/
 
+    /*
     char s3[] = "he.ll.o wo.rl.d";
     String str3(s3, sizeof(s3) - 1);
 
@@ -247,5 +308,6 @@ int main()
     for(int i=0; i<v.size(); ++i){
         std::cout << v[i] << ' ';
     }
+    */
     return 0;
 }
