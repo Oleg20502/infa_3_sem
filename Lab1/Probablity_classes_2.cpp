@@ -3,6 +3,7 @@
 #include <random>
 #include <vector>
 #include <fstream>
+#include <set>
 
 class State{
 public:
@@ -17,7 +18,7 @@ private:
 public:
     DiscreteState(int state): state(state) { }
 
-    bool contains(int s) const {
+    bool contains(int s) const override{
         return s == state;
     }
 };
@@ -29,24 +30,24 @@ public:
     SegmentState(): beg(0), end(-1) { }
     SegmentState(int beg, int end): beg(beg), end(end) { }
 
-    bool contains(int s) const {
+    bool contains(int s) const override{
         return s >= beg && s <= end;
     }
 };
 
 class MultiState: public State {
 private:
-    std::vector<SegmentState> states;
+    std::vector<State*> states;
 public:
-    MultiState(std::vector<std::vector<int>> points){
-        for(auto &s: points){
-            states.push_back(SegmentState(s[0], s[1]));
-        }
+    MultiState(std::vector<State*> states): states{states}{
+        //for(auto &s: points){
+        //    states.push_back(SegmentState(s[0], s[1]));
+        //}
     }
 
-    bool contains(int s) const {
-        for(auto &st: states){
-            if(st.contains(s))
+    bool contains(int s) const override{
+        for(auto const &st: states){
+            if(st->contains(s))
                 return true;
         }
         return false;
@@ -60,47 +61,63 @@ private:
 public:
     Union(State* s1, State* s2): state1{s1}, state2{s2} { }
 
-    bool contains(int s) const {
+    bool contains(int s) const override{
         return state1->contains(s) || state2->contains(s);
     }
 };
 
 class Intersection: public State {
 private:
-    State* state1;
-    State* state2;
+    State const* state1;
+    State const* state2;
 public:
-    Intersection(State* s1, State* s2): state1{s1}, state2{s2} { }
+    Intersection(State const * s1, State const * s2): state1{s1}, state2{s2} { }
 
-    bool contains(int s) const {
+    bool contains(int s) const override{
         return state1->contains(s) && state2->contains(s);
     }
 };
 
 class StateFactory{
+private:
+    std::set<State*> states_set;
+
 public:
     static State* create_discrete_state(int state){
-        return new DiscreteState(state);
+        State* ptr = new DiscreteState(state);
+        states_set.insert(ptr);
+        return ptr;
     }
 
     static State* create_segment_state(int beg, int end){
         return new SegmentState(beg, end);
+        State* ptr = new SegmentState(beg, end);
+        states_set.insert(ptr);
+        return ptr;
     }
 
-    static State* create_multi_state(std::vector<std::vector<int>> points){
-        return new MultiState(points);
+    static State* create_multi_state(std::vector<State*> states){
+        State* ptr = new MultiState(states);
+        states_set.insert(ptr);
+        return ptr;
     }
 
     static State* create_union(State* s1, State* s2){
-        return new Union(s1, s2);
+        State* ptr = new Union(s1, s2);
+        states_set.insert(ptr);
+        return ptr;
     }
 
     static State* create_intersection(State* s1, State* s2){
-        return new Intersection(s1, s2);
+        State* ptr = new Intersection(s1, s2);
+        states_set.insert(ptr);
+        return ptr;
     }
 
-    static void release(State* ptr){
-        delete ptr;
+    static void release(){
+        for(auto ptr: states_set){
+            delete ptr;
+        }
     }
 };
 
@@ -130,9 +147,18 @@ int main(int argc, const char * argv[]) {
     std::vector<State*> states;
     states.push_back(StateFactory::create_discrete_state(1));
     states.push_back(StateFactory::create_segment_state(beg, end));
-    states.push_back(StateFactory::create_multi_state({{1, 3}, {5, 7}, {23, 23}, {48, 57}, {60, 60}, {90, 99}}));
+    states.push_back(StateFactory::create_multi_state({StateFactory::create_segment_state(1, 3),
+                                                      StateFactory::create_segment_state(5, 7),
+                                                      StateFactory::create_discrete_state(23),
+                                                      StateFactory::create_segment_state(48, 57),
+                                                      StateFactory::create_discrete_state(60),
+                                                      StateFactory::create_segment_state(90, 99)}));
     //states.push_back(StateFactory::create_union(states[0], states[1]));
     //states.push_back(StateFactory::create_intersection(states[2], states[1]));
+    int size1 = 1;
+    int size2 = end - beg + 1;
+    int size3 = 3+3+1+10+1+10;
+
     int n = 3;
     int test_min, test_max;
     test_min = 0;
@@ -140,7 +166,8 @@ int main(int argc, const char * argv[]) {
 
     int N = 100;
     int step = 1000;
-    /*
+
+
     std::ofstream out("Data.txt");
     if (out.is_open()){
         for(auto j = 0; j<N; ++j){
@@ -155,11 +182,9 @@ int main(int argc, const char * argv[]) {
         }
     }
     out.close();
-*/
+
+
     ProbabilityTest pt(10, test_min, test_max, N*step);
-    int size1 = 1;
-    int size2 = end - beg + 1;
-    int size3 = 3+3+1+10+1+10;
 
     double P1 = static_cast<double> (size1)/(test_max - test_min + 1);
     double P2 = static_cast<double> (size2)/(test_max - test_min + 1);
@@ -169,8 +194,7 @@ int main(int argc, const char * argv[]) {
     std::cout << "Approximate prob: " << pt(states[1]) << " vs Exact prob: " << P2 << '\n';
     std::cout << "Approximate prob: " << pt(states[2]) << " vs Exact prob: " << P3 << '\n';
 
-    for (auto s : states)
-        StateFactory::release(s);
+    StateFactory::release(s);
 
     return 0;
 }
