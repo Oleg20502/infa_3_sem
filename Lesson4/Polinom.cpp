@@ -6,6 +6,22 @@
 
 using std::cout, std::cin, std::map, std::string, std::pow;
 
+int count_digits(double val)
+{
+    std::string s = std::to_string(val);
+    while(s.rfind('0') != 18446744073709551615){
+        s.erase(s.rfind('0'), 1);
+    }
+    s.erase(s.rfind('.'), 1);
+    return s.size();
+}
+
+int count_digits(int val)
+{
+    std::string s = std::to_string(val);
+    return s.size();
+}
+
 int main()
 {
     map<int, double> koef;
@@ -93,6 +109,8 @@ int main()
             cout << key << ' ' << val << '\n';
         powers.push_back(key);
     }
+
+    cout << count_digits(-123.) << '\n';
 
     //-x+x^2 -   x^   2 + 10
 
