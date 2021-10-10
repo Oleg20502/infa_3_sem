@@ -156,10 +156,10 @@ public:
 void test()
 {
     StateFactory SF;
-    Test::test(DiscreteState(1).contains(0), false, "0 is not in {1}");
-    Test::test(DiscreteState(2).contains(2), true, "2 is in {2}");
-    Test::test(SegmentState(1,15).contains(54), false, "54 is not in [1, 15]");
-    Test::test(SegmentState(23,870).contains(33), true, "33 is in [23, 870]");
+    Test::test(SF.create_discrete_state(1)->contains(0), false, "0 is not in {1}");
+    Test::test(SF.create_discrete_state(2)->contains(2), true, "2 is in {2}");
+    Test::test(SF.create_segment_state(1,15)->contains(54), false, "54 is not in [1, 15]");
+    Test::test(SF.create_segment_state(23,870)->contains(33), true, "33 is in [23, 870]");
     State* MS = SF.create_multi_state({SF.create_segment_state(28, 43),
                                        SF.create_discrete_state(50),
                                        SF.create_segment_state(48, 99)});
