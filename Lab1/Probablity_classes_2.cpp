@@ -87,35 +87,30 @@ public:
     State* create_discrete_state(int state){
         State* ptr = new DiscreteState(state);
         states_set.push_back(ptr);
-        std::cout << "100" << '\n';
         return ptr;
     }
 
     State* create_segment_state(int beg, int end){
         State* ptr = new SegmentState(beg, end);
         states_set.push_back(ptr);
-        std::cout << "200" << '\n';
         return ptr;
     }
 
     State* create_multi_state(std::vector<State*> states){
         State* ptr = new MultiState(states);
         states_set.push_back(ptr);
-        std::cout << "300" << '\n';
         return ptr;
     }
 
     State* create_union(State* s1, State* s2){
         State* ptr = new Union(s1, s2);
         states_set.push_back(ptr);
-        std::cout << "400" << '\n';
         return ptr;
     }
 
     State* create_intersection(State* s1, State* s2){
         State* ptr = new Intersection(s1, s2);
         states_set.push_back(ptr);
-        std::cout << "500" << '\n';
         return ptr;
     }
 
@@ -159,23 +154,36 @@ public:
 
 void test()
 {
-//    StateFactory SF;
-//    Test::test(SF.create_discrete_state(1)->contains(0), false, "0 is not in {1}");
-//    Test::test(SF.create_discrete_state(2)->contains(2), true, "2 is in {2}");
-//    Test::test(SF.create_segment_state(1,15)->contains(54), false, "54 is not in [1, 15]");
-//    Test::test(SF.create_segment_state(23,870)->contains(33), true, "33 is in [23, 870]");
-//    State* MS = SF.create_multi_state({SF.create_segment_state(28, 43),
-//                                       SF.create_discrete_state(50),
-//                                       SF.create_segment_state(48, 99)});
-//    Test::test(MS->contains(50), true, "50 is in MS");
-//    State* uni = SF.create_union(SF.create_discrete_state(62),
-//                                 SF.create_segment_state(1, 12));
-//    Test::test(uni->contains(41), false, "41 is not in uni");
-//    State* intersection = SF.create_intersection(SF.create_segment_state(31, 76),
-//                                 SF.create_segment_state(65, 88));
-//    Test::test(intersection->contains(69), true, "69 is in intersection");
-//
-//    SF.release();
+    StateFactory SF;
+    Test::test(SF.create_discrete_state(1)->contains(0), false, "0 is not in {1}");
+    Test::test(SF.create_discrete_state(2)->contains(2), true, "2 is in {2}");
+    Test::test(SF.create_discrete_state(0)->contains(0), true, "0 is in {0}");
+    Test::test(SF.create_segment_state(1,15)->contains(54), false, "54 is not in [1, 15]");
+    Test::test(SF.create_segment_state(23,870)->contains(33), true, "33 is in [23, 870]");
+    Test::test(SF.create_segment_state(23,-10)->contains(33), false, "33 is not in [empty]");
+    State* MS1 = SF.create_multi_state({SF.create_segment_state(28, 43),
+                                       SF.create_discrete_state(50),
+                                       SF.create_segment_state(48, 99)});
+    Test::test(MS1->contains(50), true, "50 is in MS1");
+    State* MS2 = SF.create_multi_state({SF.create_discrete_state(-10),
+                                       SF.create_segment_state(-5, -13),
+                                       SF.create_segment_state(-50, 78),
+                                       SF.create_segment_state(12, 64)});
+    Test::test(MS2->contains(34), true, "34 is in MS2");
+    State* uni1 = SF.create_union(SF.create_discrete_state(62),
+                                 SF.create_segment_state(1, 12));
+    Test::test(uni1->contains(41), false, "41 is not in uni1");
+    State* uni2 = SF.create_union(SF.create_segment_state(-10, 37),
+                                 MS1);
+    Test::test(uni2->contains(30), true, "30 is in uni2");
+    State* intersection1 = SF.create_intersection(SF.create_segment_state(31, 76),
+                                 SF.create_segment_state(65, 88));
+    Test::test(intersection1->contains(69), true, "69 is in intersection1");
+    State* intersection2 = SF.create_intersection(MS1, MS2);
+    Test::test(intersection2->contains(41), true, "69 is in intersection1");
+    Test::test(SF.create_multi_state({MS2, uni1, intersection2})->contains(100), false, "100 is not in it" );
+
+    SF.release();
 }
 
 int main(int argc, const char * argv[]) {
