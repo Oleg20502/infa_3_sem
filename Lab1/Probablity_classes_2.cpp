@@ -81,37 +81,41 @@ public:
 
 class StateFactory{
 private:
-    std::set<State*> states_set;
+    std::vector<State*> states_set;
 
 public:
     State* create_discrete_state(int state){
         State* ptr = new DiscreteState(state);
-        states_set.insert(ptr);
+        states_set.push_back(ptr);
+        std::cout << "100" << '\n';
         return ptr;
     }
 
     State* create_segment_state(int beg, int end){
-        return new SegmentState(beg, end);
         State* ptr = new SegmentState(beg, end);
-        states_set.insert(ptr);
+        states_set.push_back(ptr);
+        std::cout << "200" << '\n';
         return ptr;
     }
 
     State* create_multi_state(std::vector<State*> states){
         State* ptr = new MultiState(states);
-        states_set.insert(ptr);
+        states_set.push_back(ptr);
+        std::cout << "300" << '\n';
         return ptr;
     }
 
     State* create_union(State* s1, State* s2){
         State* ptr = new Union(s1, s2);
-        states_set.insert(ptr);
+        states_set.push_back(ptr);
+        std::cout << "400" << '\n';
         return ptr;
     }
 
     State* create_intersection(State* s1, State* s2){
         State* ptr = new Intersection(s1, s2);
-        states_set.insert(ptr);
+        states_set.push_back(ptr);
+        std::cout << "500" << '\n';
         return ptr;
     }
 
@@ -155,23 +159,23 @@ public:
 
 void test()
 {
-    StateFactory SF;
-    Test::test(SF.create_discrete_state(1)->contains(0), false, "0 is not in {1}");
-    Test::test(SF.create_discrete_state(2)->contains(2), true, "2 is in {2}");
-    Test::test(SF.create_segment_state(1,15)->contains(54), false, "54 is not in [1, 15]");
-    Test::test(SF.create_segment_state(23,870)->contains(33), true, "33 is in [23, 870]");
-    State* MS = SF.create_multi_state({SF.create_segment_state(28, 43),
-                                       SF.create_discrete_state(50),
-                                       SF.create_segment_state(48, 99)});
-    Test::test(MS->contains(50), true, "50 is in MS");
-    State* uni = SF.create_union(SF.create_discrete_state(62),
-                                 SF.create_segment_state(1, 12));
-    Test::test(uni->contains(41), false, "41 is not in uni");
-    State* intersection = SF.create_intersection(SF.create_segment_state(31, 76),
-                                 SF.create_segment_state(65, 88));
-    Test::test(intersection->contains(69), true, "69 is in intersection");
-
-    SF.release();
+//    StateFactory SF;
+//    Test::test(SF.create_discrete_state(1)->contains(0), false, "0 is not in {1}");
+//    Test::test(SF.create_discrete_state(2)->contains(2), true, "2 is in {2}");
+//    Test::test(SF.create_segment_state(1,15)->contains(54), false, "54 is not in [1, 15]");
+//    Test::test(SF.create_segment_state(23,870)->contains(33), true, "33 is in [23, 870]");
+//    State* MS = SF.create_multi_state({SF.create_segment_state(28, 43),
+//                                       SF.create_discrete_state(50),
+//                                       SF.create_segment_state(48, 99)});
+//    Test::test(MS->contains(50), true, "50 is in MS");
+//    State* uni = SF.create_union(SF.create_discrete_state(62),
+//                                 SF.create_segment_state(1, 12));
+//    Test::test(uni->contains(41), false, "41 is not in uni");
+//    State* intersection = SF.create_intersection(SF.create_segment_state(31, 76),
+//                                 SF.create_segment_state(65, 88));
+//    Test::test(intersection->contains(69), true, "69 is in intersection");
+//
+//    SF.release();
 }
 
 int main(int argc, const char * argv[]) {
@@ -185,11 +189,11 @@ int main(int argc, const char * argv[]) {
     states.push_back(SF.create_discrete_state(1));
     states.push_back(SF.create_segment_state(beg, end));
     states.push_back(SF.create_multi_state({SF.create_segment_state(1, 3),
-                                                      SF.create_segment_state(5, 7),
-                                                      SF.create_discrete_state(23),
-                                                      SF.create_segment_state(48, 57),
-                                                      SF.create_discrete_state(60),
-                                                      SF.create_segment_state(90, 99)}));
+                                            SF.create_segment_state(5, 7),
+                                            SF.create_discrete_state(23),
+                                            SF.create_segment_state(48, 57),
+                                            SF.create_discrete_state(60),
+                                            SF.create_segment_state(90, 99)}));
     //states.push_back(SF.create_union(states[0], states[1]));
     //states.push_back(SF.create_intersection(states[2], states[1]));
     int size1 = 1;
