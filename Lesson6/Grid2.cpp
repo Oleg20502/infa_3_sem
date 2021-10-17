@@ -86,10 +86,12 @@ public:
     {
         Grid<T> g = memory[x_idx*x_size + y_idx*y_size];
         T sum = (T)0;
-        int I = 0
+        int I = 0;
         for(int i=0; i<g.get_xsize()*g.get_ysize(); ++i){
-            ++I;
-            sum +=g.memory[i];
+            for(int j=0; j<g.get_ysize(); ++j){
+                ++I;
+                sum +=g(i, j);
+            }
         }
         return sum/I;
     }
@@ -104,9 +106,16 @@ public:
 
     UniGrid& operator=(T value)
     {
-        for(int i=0; i<x_size*y_size; ++i)
-            memory[i] = value;
-            memory[i].if_grid = false;
+        g = memory[i];
+        if(g.get_xsize()*g.get_ysize() == 1){
+            g.memory[0] = value;
+
+        }
+        else{
+            for(int i=0; i<x_size*y_size; ++i){
+                g = value;
+            }
+        }
         return *this;
     }
 

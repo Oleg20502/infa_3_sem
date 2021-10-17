@@ -19,7 +19,7 @@ public:
 
     T operator()(size_t x_idx, size_t y_idx) const
     {
-        return memory[x_idx*x_size + y_idx*y_size];
+        return memory[y_idx*x_size + x_idx];
     }
 
     T& operator()(size_t x_idx, size_t y_idx)
