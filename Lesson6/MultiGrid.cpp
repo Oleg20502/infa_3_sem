@@ -80,7 +80,7 @@ public:
     size_t get_xsize() const {return x_size;}
     size_t get_ysize() const {return y_size;}
 
-    MultiGrid& operator=(T value)
+    MultiGrid& operator=(T const &value)
     {
         if(if_subgrid == false){
             data = value;
@@ -93,7 +93,7 @@ public:
         return *this;
     }
 
-    MultiGrid& operator=(MultiGrid &g)
+    MultiGrid& operator=(MultiGrid const &g)
     {
         delete [] memory;
         if (g.is_subgrid() == false){
