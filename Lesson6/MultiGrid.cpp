@@ -17,8 +17,7 @@ public:
     MultiGrid(size_t x_size, size_t y_size): memory{ new MultiGrid[x_size * y_size]},
                                             x_size{x_size}, y_size{y_size}, if_subgrid{true} {}
 
-
-    MultiGrid(MultiGrid &g)
+    MultiGrid(MultiGrid const &g)
     {
         if (g.is_subgrid() == false){
             memory = nullptr;
@@ -36,6 +35,15 @@ public:
                 }
             }
         }
+    }
+
+    MultiGrid(MultiGrid &&g): memory{g.memory}, data{g.data}, x_size{g.x_size}, y_size{g.y_size},
+                              if_subgrid{g.if_subgrid}
+    {
+        g.memory = nullptr;
+        g.data = (T)0;
+        g.x_size = g.y_size = 0;
+        g.if_subgrid = false;
     }
 
     ~MultiGrid()
@@ -107,6 +115,22 @@ public:
         return *this;
     }
 
+    MultiGrid& operator=(MultiGrid &&g)
+    {
+        memory = g.memory;
+        data = g.data;
+        x_size = g.x_size;
+        y_size = g.y_size;
+        if_subgrid = g.if_subgrid;
+
+        g.memory = nullptr;
+        g.data = (T)0;
+        g.x_size = g.y_size = 0;
+        g.if_subgrid = false;
+
+        return *this;
+    }
+
     T get_data() const {return data;}
 
     bool is_subgrid() const {return if_subgrid;}
@@ -174,6 +198,8 @@ void test_MultiGrid()
     Test::test(gr1(0, 0)(0, 2).is_subgrid(), true, "Correct: true");
     Test::test(gr1(0, 0)(0, 2)(0, 3).get_data(), 8, "Correct: 8");
     MultiGrid<int> gr2 = gr1(0, 0)(0, 2);
+    Test::test(gr1.get_subgrid(0, 0).is_subgrid(), true, "Correct: true");
+    Test::test(gr1.get_subgrid(0, 0).get_xsize(), 3, "Correct: 3");
     gr2.make_subgrid(0, 2, 20, 10);
     Test::test(gr2(0, 2).is_subgrid(), true, "Correct: true");
     gr2(0, 2)(16, 7) = -10000;
@@ -185,6 +211,13 @@ void test_MultiGrid()
     gr1.collapse_subgrid(0, 0, 2, 2);
     Test::test(gr1(0, 0).is_subgrid(), false, "Correct: false");
     Test::test(gr1(0, 0).get_data(), 7, "Correct: 7");
+    MultiGrid<int> gr4(22);
+    MultiGrid<int> gr5(std::move(gr4));
+    Test::test(gr5.get_data(), 22, "Correct: 22");
+    Test::test(gr4.get_data(), 0, "Correct: 0");
+    MultiGrid<int> gr6;
+    gr6 = std::move(gr5);
+    Test::test(gr6.get_data(), 22, "Correct: 22");
 
     MultiGrid<double> gr11(3, 3);
     Test::test(gr11.get_xsize(), 3, "Correct: 3");
@@ -202,6 +235,8 @@ void test_MultiGrid()
     Test::test(gr11(0, 0)(0, 2).is_subgrid(), true, "Correct: true");
     Test::test(gr11(0, 0)(0, 2)(0, 3).get_data(), 8.5, "Correct: 8.5");
     MultiGrid<double> gr22 = gr11(0, 0)(0, 2);
+    Test::test(gr11.get_subgrid(0, 0).is_subgrid(), true, "Correct: true");
+    Test::test(gr11.get_subgrid(0, 0).get_xsize(), 3, "Correct: 3");
     gr22.make_subgrid(0, 2, 20, 10);
     Test::test(gr22(0, 2).is_subgrid(), true, "Correct: true");
     gr22(0, 2)(16, 7) = -10000.1234;
@@ -216,11 +251,19 @@ void test_MultiGrid()
     Test::test(gr11(0, 0).is_subgrid(), false, "Correct: false");
     //Test::test(gr11(0, 0).get_data(), 8.31893, "Correct: 8.31893");
     //There is some difficulty when checking if doubles are equal
+    MultiGrid<double> gr44(22);
+    MultiGrid<double> gr55(std::move(gr44));
+    Test::test(gr55.get_data(), 22.0, "Correct: 22.0");
+    Test::test(gr44.get_data(), 0.0, "Correct: 0.0");
+    MultiGrid<double> gr66;
+    gr66 = std::move(gr55);
+    Test::test(gr66.get_data(), 22.0, "Correct: 22.0");
 }
 
 int main()
 {
     test_MultiGrid();
+
     return 0;
 }
 
