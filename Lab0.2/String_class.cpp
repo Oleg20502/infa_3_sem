@@ -20,10 +20,10 @@ public:
 class TimeMeasure{
 public:
     void start(){
-        auto start_time_ = std::chrono::system_clock::now();
+        start_time_ = std::chrono::system_clock::now();
     }
     void stop(){
-        auto stop_time_ = std::chrono::system_clock::now();
+        stop_time_ = std::chrono::system_clock::now();
     }
      double elapsed() const {
         auto elapsed_time = stop_time_ - start_time_;
